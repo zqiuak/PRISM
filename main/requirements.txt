@@ -1,0 +1,46 @@
+blessings @ file:///work/ci_py311/blessings_1676839130961/work
+brotlipy==0.7.0
+cachetools==5.3.2
+certifi==2023.7.22
+cffi @ file:///work/ci_py311/cffi_1676822533496/work
+charset-normalizer @ file:///tmp/build/80754af9/charset-normalizer_1630003229654/work
+cryptography @ file:///croot/cryptography_1694444244250/work
+filelock @ file:///work/ci_py311/filelock_1676823024085/work
+gmpy2 @ file:///work/ci_py311/gmpy2_1676839849213/work
+gpustat @ file:///tmp/build/80754af9/gpustat_1621432778913/work
+idna @ file:///work/ci_py311/idna_1676822698822/work
+Jinja2 @ file:///work/ci_py311/jinja2_1676823587943/work
+joblib @ file:///home/conda/feedstock_root/build_artifacts/joblib_1691577114857/work
+MarkupSafe @ file:///work/ci_py311/markupsafe_1676823507015/work
+mkl-fft @ file:///croot/mkl_fft_1695058164594/work
+mkl-random @ file:///croot/mkl_random_1695059800811/work
+mkl-service==2.4.0
+mpmath @ file:///croot/mpmath_1690848262763/work
+networkx @ file:///croot/networkx_1690561992265/work
+numpy @ file:///croot/numpy_and_numpy_base_1691091611330/work
+nvidia-ml-py==12.535.133
+nvidia-ml-py3 @ file:///tmp/build/80754af9/nvidia-ml_1621428042568/work
+nvitop==1.3.1
+pandas==2.1.3
+Pillow @ file:///croot/pillow_1695134008276/work
+psutil @ file:///work/ci_py311_2/psutil_1679337388738/work
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pyOpenSSL @ file:///croot/pyopenssl_1690223430423/work
+PySocks @ file:///work/ci_py311/pysocks_1676822712504/work
+python-dateutil==2.8.2
+pytz==2023.3.post1
+requests @ file:///croot/requests_1690400202158/work
+scikit-learn @ file:///home/conda/feedstock_root/build_artifacts/scikit-learn_1695282757037/work
+scipy @ file:///croot/scipy_1691606680890/work/dist/scipy-1.11.1-cp311-cp311-linux_x86_64.whl#sha256=ba491c7d30a02bb93027e90b0aa58c0fe8d1e0fc3ddfe3469178740bd150aa45
+SimpleITK==2.2.1
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+sympy @ file:///work/ci_py311_2/sympy_1679339311852/work
+termcolor==2.4.0
+threadpoolctl @ file:///home/conda/feedstock_root/build_artifacts/threadpoolctl_1689261241048/work
+torch==2.0.1
+torchvision==0.15.2
+tqdm==4.66.1
+triton==2.0.0
+typing_extensions @ file:///croot/typing_extensions_1690297465030/work
+tzdata==2023.3
+urllib3 @ file:///croot/urllib3_1686163155763/work
