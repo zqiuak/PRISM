@@ -1,0 +1,24 @@
+# experiments
+Result/
+
+# pycache
+__pycache__/
+
+# compare
+model/SOTA/
+
+# Labels
+Labels/
+
+#weights
+weights/
+
+*.ipynb
+
+*.log
+
+.vscode/
+
+downloaded_code/
+
+dataroot/

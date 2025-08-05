@@ -1,50 +1,132 @@
-# Large-scale Multi-sequence Pretraining for Generalizable MRI Analysis in Versatile Clinical Applications
+# PRISM: Large-scale Multi-sequence Pretraining for Generalizable MRI Analysis in Versatile Clinical Applications
 
-# Dataset structure
 
-This folder contains the dataset used for training and evaluating the model. The dataset is organized into the following structure:
+[![Python](https://img.shields.io/badge/Python-3.11.0-blue)]()
+[![License](https://img.shields.io/badge/License-Apache%202.0-yellow)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/Dataset-PRISM--336K-red)]()
+[![MONAI](https://img.shields.io/badge/MONAI-1.4.0-blue)](https://monai.io/)
 
+## Introduction
+This is public repository of **PRISM**, a foundation model **PR**e-trained with large-scale mult**I**-**S**equence **M**RI. We collected a total of 64 datasets from both public and private sources, encompassing a wide range of whole-body anatomical structures, with scans spanning diverse MRI sequences.
+We pre-trained a 3D Swin Transformer on the dataset with 336,476 multi-sequence MRI volumes (PRISM-336k) collected from 8 public repositories and 26 in-house database, covering 10 anatomical regions and various imaging protocols.
+
+![PRISM](asserts/main.png)
+
+<!-- ![Datasets](asserts/datasets.png) -->
+
+## Getting Started
+
+### Installation
+First, copy this repository and install the required packages. You can do this by running the following command:
+```bash
+git clone https://github.com/zqiuak/PRISM.git
+cd main
+pip install -r requirements.txt
 ```
-dataset name /
-├── downloaded_code/
-├── ds.py
-├── socks.py
-├── (ds_task1.py) 
-├── (socks_task1.py) 
-...
 
+
+### Preparation your dataset
+You can download the [example dataset](https://www.kaggle.com/datasets/anhoangvo/acdc-dataset) to test the codes.
+
+For validation on your own dataset, be sure to follow the instructions in the `dataset/README.md` file and go to section [Fine-tuning](#fine-tuning).
+We have provided some examples of how to prepare your datasets.
+Change the dataset path in the `run/options.py` file to fit your dataset.
+A simple example of dataset path configuration is shown below:
 ```
-- `downloaded_code/`: This folder contains the code provided by the data provider. For example, it may contain the code for downloading the dataset or any other pre-processing steps.
-- `ds.py`: This file contains the code for the dataset class. It is responsible for loading and processing the dataset. Details are provided below in the [ds.py](#dspy) section.
-- `socks.py`: This file contains the code for training/validation. It is responsible for processing the batched data, model define, model inference, loss calculation, metrics calculation, etc. Details are provided below in the [socks.py](#sockspy) section.
-- (Optional) `ds_taskX.py` and `socks_taskX.py`: If this dataset contains multiple tasks, the task-specific files are named accordingly. For example, if a dataset contains classification and segmentation tasks, it will have `ds_cls.py`, `ds_seg.py`, `socks_cls.py`, and `socks_seg.py`. 
+class Data_Path_Class():
+    def __init__(self):
+        self.root = "./database/"  # Root directory for dataset
+        self.datapath = self.root  # image data subdirectories are here
+        self.labelfilepath = os.path.join(self.root, "labels/")  # Directory for label files"
+        self.cache_dir = os.path.join(self.root, "cache/") # Directory for cache files
+data_path = Data_Path_Class()
+```
+
+### Download the Pre-trained Weights
+You can download the [pre-trained weights of PRISM](https://drive.google.com/file/d/1__lWJfBaCSQqkyPvxpQqK-MWH_d__bWz/view?usp=sharing), and place the downloaded file in the `main/weights` folder of this repository.
+
+## Training
+### Fine-tuning
+Once set up the dataset and downloaded the pre-trained weights, you can fine-tune the model on your own dataset.
+
+For classification, segmentation and regression tasks, modify the `run_ft.sh` file to set your task and weight name, and then run the script:
+
+```task```: the name of your task, also be the name of the dataset folder in the `dataset` directory.
+
+```weight_name```: the name of the pre-trained weight file without the `.pt` extension, if file does not exist, it will run the training from scratch.
+
+```bash
+bash run_ft.sh
+```
+
+For registration, the evaluation process uses [TransMorph](https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration). 
+Please refer to the repository for [IXI](https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/tree/main/IXI) and [OASIS](https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/tree/main/OASIS)
+
+For report generation, the evaluation process uses [R2GenGPT](https://github.com/wang-zhanyu/R2GenGPT)
+
+### Pre-training
+If you want to pre-train the model on your own dataset, you can run the following command:
+```bash
+bash run_pt.sh
+```
+
+### Load Pre-trained weight on your own models:
+If you want to load the pre-trained weights of PRISM on your own models, you can use the following code snippet. 
+In this example, your model should have an object of `monai.networks.nets.swin_unetr.SwinTransformer`, with the attribute `model_vit_key` set to the same value as the key used in the pre-trained weights (usually `swinViT` for Swin Transformer).
+
+```python
+import torch
+
+def load_pt(model, weight_file, model_vit_key='swinViT'):
+  ckpt = torch.load(weight_file, map_location="cpu", weights_only=False)
+  if 'state_dict' in ckpt:
+      weight = ckpt['state_dict']
+  else:
+      weight = ckpt
+  selected_weight = weight
+  current_model_dict = model.state_dict()
+  new_model_dict = {}
+  for k in current_model_dict.keys():
+
+      if model_vit_key in k: 
+          weight_key_suffix = model_vit_key + k.split(model_vit_key)[-1] 
+
+          if weight_key_suffix in selected_weight.keys():
+              if (current_model_dict[k].size() == selected_weight[weight_key_suffix].size()):
+                  new_model_dict[k] = selected_weight[weight_key_suffix].clone()  
+              else:
+                  try:
+                      new_model_dict[k] = selected_weight[weight_key_suffix].expand_as(current_model_dict[k]).clone()
+                      print('[INFO] weight size mismatch:', k, "current size:", current_model_dict[k].size(), "pt size:", selected_weight[weight_key_suffix].size(), "expanded to match current model size")
+                  except RuntimeError as e:
+                      print('[WARNING] error weight size:', k, "current size:", current_model_dict[k].size(), "pt size:", selected_weight[weight_key_suffix].size(), "expand size error:", e)
+                      new_model_dict[k] = current_model_dict[k].clone()
+          else:
+              print('current model weight:', k, "not found in pretrained weight")
+              new_model_dict[k] = current_model_dict[k].clone()
+              
+
+      else:
+          new_model_dict[k] = current_model_dict[k].clone()
+
+  model.load_state_dict(new_model_dict, strict=True)
+  return model
+
+model = load_pt(model, pretrained_weight, ckpt_vit_key='swinViT', model_vit_key='swinViT')
+```
+
+<!-- ### Registration
 
 
-## `ds.py`
-This file is responsible for loading and processing the dataset.
-If the dataset is used in pre-training, it will contain the following classes and functions:
-- `get_pt_list()`: Appears when the dataset is used in pre-training. This function will return a list of data. It takes the following parameters:
-  - `datascale`:str. The scale of the data. It can be `10k`, `50k`, `300k`, etc., used to identify the cached list.
-  - `sample_size`:int. Actually how many samples are expected to draw from the dataset. If sample_size=-1, it means all the samples in the dataset will be used. 
-  - `keys`:list. The keys of the data. Usually contains 'case_id', 'seq_id', 'image', etc.
-- `pt_seq_loader`: This is usually a list of objects of the `monai.transforms.Compose` class. It is used to load the sequence.
+### Report Generation -->
 
-If the dataset is used in down-stream tasks, it will contain the following classes and functions:
-- `get_ft_ds()`: Appears when this dataset is used in down-stream tasks. This function is responsible for loading the dataset. We use `util.datautils.get_downstream_socks()` to get the dataset from this function.
 
-Usually, this file contains the following helper functions and variables:
-- `DATASET_PREFIX`: The prefix used for the dataset. It is used to identify the dataset in the code.
-- `original_seq_loader`: This is usually a object of the `monai.transforms.Compose` class. It is used to load the original sequence of the dataset and pre-process it, commonly used in the `create_cache()` function.
-- `create_cache()`: It is used for creating the cache for the dataset.
-- `get_ft_list()`: To get the list of files in the dataset. Usually it returns train_list, val_list, test_list to serve the `get_ft_ds()`. Whether the list is sequence-based or case-based depends on the dataset.
-- `train_transforms`, `val_transforms`: These are usually objects of the `monai.transforms.Compose` class. They are used to pre-process the data before feeding it into the model. Used in the `get_ft_ds()` function.
 
-## `socks.py`
-This file is responsible for training and validating the model. Usually it does contain the components that are used in the training and validation process. It is usually contains the following classes and functions:
-- `FT_MRI_FM`: The model class. 
-- `get_task_metrics()`: This function is used to get the evaluation metrics, it returns a dictionary in the format of {taskname: {metricname: metric class in `monai.metrics`}}.
-- `prepare_data()`: Processing the batched data. It returns the data and label.
-- `infer_model()`: How to infer the model with given data from the `prepare_data()` function. It returns the output of the model.
-- `loss_fn()`: The loss calculation function. It returns the loss value.
-- `cal_metric()`: The metric calculation function. If aggregate is False, it append the metric with given prediction and label to the `monai.metrics` class. If aggregate is True, it returns the aggregated metric. It also returns the value of current metric.
-
+## Acknowledgements
+We would like to thank the authors of the following repositories for their contributions to this project:
+- [nnU-Net](https://github.com/MIC-DKFZ/nnUNet/tree/master)
+- [SwinUNETR: Self-Supervised Pre-Training of Swin Transformers for 3D Medical Image Analysis](https://github.com/Project-MONAI/research-contributions/tree/main/SwinUNETR/Pretrain)
+- [BrainSegFounder: Towards Brain Foundation Models for Neuroimage Analysis](https://github.com/lab-smile/BrainSegFounder/tree/main)
+- [VoCo: A Simple-yet-Effective Volume Contrastive Learning Framework for 3D Medical Image Analysis](https://github.com/Luffy03/Large-Scale-Medical)
+- [TransMorph: Transformer for Unsupervised Medical Image Registration](https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/tree/main)
+- [R2GenGPT: Radiology Report Generation with Frozen LLMs](https://github.com/wang-zhanyu/R2GenGPT)
