@@ -160,13 +160,6 @@ train_transform_list = [
     SelectItemsd(keys=["image", 
                     #    'img_path', 'case_id', 'seq_id', 
                        'Repetition time', 'Echo time', 'Flip angle', 'part'], allow_missing_keys=False),
-    # NormalizeIntensityd(keys=["image"], nonzero=False, channel_wise=False),
-    # RandAffined(
-    #     keys=["image"],
-    #     prob=0.5,
-    #     rotate_range= (np.pi/12)*3,
-    #     shear_range= (0.2,)*6
-    # ),
     OneOf([
         Orientationd(keys=["image"], axcodes="RAS"),
         Orientationd(keys=["image"], axcodes="RSA"),
@@ -177,14 +170,6 @@ train_transform_list = [
     ]),
     RandAxisFlipd(keys=["image"], prob=0.5),
     SpatialPadd(keys=["image"], spatial_size=args.roi_size),
-    # RandCropByPosNegLabelD(
-    #     keys=["image"],
-    #     pos=9.0,
-    #     neg=1.0,
-    #     num_samples=args.sw_batch_size,
-    #     roi_size=args.roi_size,
-
-    # )
     RandSpatialCropd(keys=["image"], roi_size=args.roi_size, random_center=True, random_size=False),
     ToTensord(keys=["image"], track_meta=False),
 ]

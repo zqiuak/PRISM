@@ -1,7 +1,7 @@
 #!/bin/bash
 # set here:
 
-exp_path="/project/medimgfmod/zqiuak/ResFile/MRIFM/Exp/FT/PROMISE12/0615-175848-nopt"
+exp_path="./YourExpDir"
 
 
 
@@ -92,7 +92,6 @@ if [ "$debug" = "true" ]; then
     echo "Debug mode is ON"
 fi
 
-# CMD+=" --resume '/home/zqiuak/Codes/Knee/MRIFM_Private/Result/Exp/FT/OAI_ZIB/0531-180909-newssl/checkpoint.pt'"
 CMD+="| tee $logdir/$now.log"
 
 echo "Running command: $CMD"

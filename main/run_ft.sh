@@ -2,7 +2,7 @@
 
 # Set your task and weight name here:
 task='acdc'
-weight_name='nopt'
+weight_name='PRISM'
 
 # addition information to write to directory name
 a='separate'

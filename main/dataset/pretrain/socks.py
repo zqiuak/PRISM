@@ -53,28 +53,6 @@ def prepare_data(batch_data, mode, args):
 def infer_model(model, data, mode, args):
     raise DeprecationWarning("Please use the XX_forward in the model")
 
-def loss_fn(pred, label, stage, args):
-    raise DeprecationWarning("Please call the loss function in below")
-    recon_img, contrast_f, meta_pred, disc_pred = pred
-    img, meta_label, part_label = label
-    recon_label = img
-
-    total_loss = 0
-
-    if not args.encoder_only:
-        total_loss += (Recon_Loss(recon_img, recon_label) * LOSS_WEIGHT['recon'])
-    
-    if args.model_config.pred_meta:
-        total_loss += Meta_Loss(meta_pred, meta_label) * LOSS_WEIGHT['meta']
-        total_loss += Part_Loss(part_pred, part_label) * LOSS_WEIGHT['meta']
-
-    if args.model_config.contrastive:
-        # contrast_loss = contrast_lossfunc(contrast_f, sync_contrast_f)
-        # total_loss += contrast_loss
-        pass
-
-    return total_loss
-
 def Recon_Loss(recon_img, recon_label):
     loss = F.l1_loss(recon_img, recon_label)
     # + 0.5*SSIMLoss(spatial_dims=3)(recon_img, recon_label)
@@ -126,9 +104,6 @@ def G_nonsaturating_loss(fake_pred):
 def Contrast_Loss(real_contrast_f, sync_contrast_f):
     ori_seq_f, ori_str_f = real_contrast_f['seq'], real_contrast_f['str']
     sync_seq_f, sync_str_f = sync_contrast_f['seq'], sync_contrast_f['str']
-    # sim_matrix = F.cosine_similarity(ori_seq_f.detach().unsqueeze(1), ori_seq_f.detach().unsqueeze(0), dim=2)
-    # seq_f_bank = ori_seq_f[sim_matrix.max(dim=0)[1]]
-    # loss = contrast_lossfunc(ori_str_f, sync_str_f) + contrast_lossfunc(sync_seq_f, seq_f_bank)
     loss = contrast_lossfunc(ori_str_f, sync_str_f)
     return loss
 

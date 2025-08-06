@@ -27,9 +27,6 @@ def prepare_data(data, mode, args):
     label = data["label"]  # [B, 1, D, H, W]
     if label.shape[1] ==1 and label.shape[1]!= len(SEG_CLASS):
         label = AsDiscrete(to_onehot=len(SEG_CLASS), dim=1)(label)  
-        # label = label.squeeze(1)  # [B, D, H, W]
-        # label = label.long()  # [B, D, H, W]
-        # label = F.one_hot(label, num_classes=len(SEG_CLASS)).permute(0, 4, 1, 2, 3)
     label = label.cuda(args.gpu)
     return img, label
 
@@ -49,15 +46,10 @@ def infer_model(model, data, mode, args):
 
 def loss_fn(pred, label, mode='train', args=None):
     # Class weights can be adjusted for cardiac segmentation if needed
-    # weight = torch.tensor([0.1, 1.0, 2.0, 1.0], dtype=torch.float32).to(pred.device)
     loss_func = DiceCELoss(include_background=False, softmax=True)
     loss = loss_func(pred, label)
     return loss
 
-# def _post_process(pred):
-#     # pred = F.one_hot(torch.argmax(pred, 1), num_classes=len(SEG_CLASS)).permute(0, 4, 1, 2, 3)
-#     pred = torch.softmax(pred, dim=1)  # [B, D, H, W]
-#     return pred
 
 _post_process = AsDiscrete(argmax=True, to_onehot=len(SEG_CLASS), dim=1)
 

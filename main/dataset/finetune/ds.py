@@ -37,7 +37,7 @@ def _find_nii_in_folder(folder_path):
                 return os.path.join(root, f)
     return None
 
-def create_seqfile(force_overwrite=False, output_path='/home/zqiuak/Codes/Knee/MRIFM_Private/Labels/acdc_seqfile.csv'):
+def create_seqfile(force_overwrite=False, output_path='./Labels/acdc_seqfile.csv'):
     """Create a CSV file listing all sequences and metadata, including both training and testing datasets."""
     print(f"Will save to: {output_path}")
 
@@ -132,14 +132,10 @@ def create_seqfile(force_overwrite=False, output_path='/home/zqiuak/Codes/Knee/M
 ################## downstream tasks ##################
 
 train_transforms = Compose([
-    # LoadImaged(keys=["image", "label"], reader='NumpyReader'),
     LoadImaged(keys=["image", "label"], reader='NibabelReader', ensure_channel_first=True),
     Orientationd(keys=["image", "label"], axcodes="RAS"),
-    # ScaleIntensityRangePercentilesd(keys=["image"], lower=1.0, upper=99.9, b_min=0.0, b_max=1.0, clip=True),
     NormalizeIntensityd(keys=["image"], nonzero=True, channel_wise=True),
     Transposed(keys=["image", "label"], indices=[0, 3, 1, 2]),
-    # RandRotated(keys=["image", "label"], range_x=[-5, 5], range_y=[-5, 5], range_z=[-5, 5], prob=0.5),
-    # RandSpatialCropd(keys=["image", "label"], roi_size = args.roi_size),
     CropForegroundd(
         keys=["image", "label"], source_key="image", k_divisible=INPUT_SIZE
     ),
@@ -161,10 +157,8 @@ train_transforms = Compose([
 ])
 
 val_transforms = Compose([
-    # LoadImaged(keys=["image", "label"], reader='NumpyReader'),
     LoadImaged(keys=["image", "label"], reader='NibabelReader', ensure_channel_first=True),
     Orientationd(keys=["image", "label"], axcodes="RAS"),
-    # ScaleIntensityRangePercentilesd(keys=["image"], lower=1.0, upper=99.9, b_min=0.0, b_max=1.0, clip=True),
     NormalizeIntensityd(keys=["image"], nonzero=True, channel_wise=True),
     
     Transposed(keys=["image", "label"], indices=[0, 3, 1, 2]),
@@ -203,8 +197,6 @@ def get_ft_list(use_cache = False):
 
     train_list = seq_pd[seq_pd['dataset'] == 'training'].to_dict('records')
     
-    # val_list = train_list[:int(0.2 * len(train_list))]  # 20% for validation
-    # train_list = train_list[int(0.2 * len(train_list)):]  # 80% for training
     train_num = int(len(train_list)*0.8)  # Use 80% of training data for training
     rng = np.random.default_rng(42)
     indices = rng.permutation(len(train_list))
