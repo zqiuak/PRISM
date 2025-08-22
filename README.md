@@ -60,10 +60,12 @@ bash run_ft.sh
 ```
 
 For registration, the evaluation process uses [TransMorph](https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration). 
-Please refer to the repository for [IXI](https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/tree/main/IXI) and [OASIS](https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/tree/main/OASIS)
+Please refer to the repository for [IXI](https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/tree/main/IXI) and [OASIS](https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/tree/main/OASIS).
 
-For report generation, the evaluation process uses [R2GenGPT](https://github.com/wang-zhanyu/R2GenGPT)
+For report generation, the evaluation process uses [R2GenGPT](https://github.com/wang-zhanyu/R2GenGPT).
 
+
+Finetuning time differs depending on the hardware (GPU) used.
 ### Pre-training
 If you want to pre-train the model on your own dataset, you can run the following command:
 ```bash
